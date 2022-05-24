@@ -65,5 +65,6 @@ class ServiceClient(requests.Session):
 
     def upload_report(self, report: bytes) -> UploadResponse:
         """Upload test run report to Schemathesis.io."""
-        self.post("/reports/upload/", report, headers={"Content-Type": "application/x-gtar"})
-        return UploadResponse()
+        response = self.post("/reports/upload/", report, headers={"Content-Type": "application/x-gtar"})
+        data = response.json()
+        return UploadResponse(message=data["message"], next_url=data["next"])

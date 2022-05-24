@@ -16,6 +16,8 @@ WORKER_CHECK_PERIOD = 0.005
 WORKER_JOIN_TIMEOUT = 10
 # Version of the hosts file format
 HOSTS_FORMAT_VERSION = "0.1"
+# Upload report version
+REPORT_VERSION = "1"
 # Default path to the hosts file
 DEFAULT_HOSTS_PATH = pathlib.Path.home() / ".config/schemathesis/hosts.toml"
 TOKEN_ENV_VAR = "SCHEMATHESIS_TOKEN"

@@ -6,7 +6,7 @@ import traceback
 from collections import defaultdict
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Dict, Generator, Iterable, List, NoReturn, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, Iterable, List, NoReturn, Optional, Tuple, Union, cast
 from urllib.parse import urlparse
 
 import attr
@@ -602,7 +602,7 @@ def run(
 
     API_SLUG is an API identifier to upload data to Schemathesis.io.
     """
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-branches
     maybe_disable_color(ctx, no_color)
     check_auth(auth, headers)
     selected_targets = tuple(target for target in targets_module.ALL_TARGETS if target.__name__ in targets)
@@ -620,6 +620,8 @@ def run(
     callbacks.validate_schema(schema, schema_kind, base_url=base_url, dry_run=dry_run, app=app, api_slug=api_slug)
     client = None
     test_run = None
+    if schema_kind == callbacks.SchemaInputKind.SLUG:
+        api_slug = schema
     if api_slug is not None or schema_kind == callbacks.SchemaInputKind.SLUG:
         if token is None:
             hostname = (
@@ -635,7 +637,8 @@ def run(
             )
         client = service.ServiceClient(base_url=schemathesis_io_url, token=token)
         try:
-            test_run = client.create_test_run(schema)
+            slug: str = cast(str, api_slug)
+            test_run = client.create_test_run(slug)
             if schema_kind == callbacks.SchemaInputKind.SLUG:
                 # Replace config values with ones loaded from the service
                 schema = test_run.config.location
@@ -643,7 +646,7 @@ def run(
         except requests.HTTPError as exc:
             handle_service_error(exc)
     if report and client is None:
-        client = service.ServiceClient(base_url=schemathesis_io_url, token=None)
+        client = service.ServiceClient(base_url=schemathesis_io_url, token=token)
     if "all" in checks:
         selected_checks = checks_module.ALL_CHECKS
     else:
@@ -710,6 +713,9 @@ def run(
         client,
         test_run,
         report,
+        api_slug,
+        location=schema,
+        base_url=base_url,
     )
 
 
@@ -978,6 +984,9 @@ def execute(
     client: Optional[service.ServiceClient],
     test_run: Optional[service.TestRun],
     report: bool,
+    api_slug: Optional[str],
+    location: str,
+    base_url: Optional[str],
 ) -> None:
     """Execute a prepared runner by drawing events from it and passing to a proper handler."""
     # pylint: disable=too-many-branches
@@ -990,7 +999,11 @@ def execute(
             reporter = service.ServiceReporter(client=client, test_run=test_run, out_queue=service_queue)
             handlers.append(reporter)
         if report:
-            handlers.append(service.ReportHandler(client=client, out_queue=service_queue))
+            handlers.append(
+                service.ReportHandler(
+                    client=client, api_name=api_slug, location=location, base_url=base_url, out_queue=service_queue
+                )
+            )
     if junit_xml is not None:
         handlers.append(JunitXMLHandler(junit_xml))
     if debug_output_file is not None:

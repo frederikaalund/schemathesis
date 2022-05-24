@@ -295,22 +295,28 @@ def handle_service_integration(context: ExecutionContext) -> None:
     """If Schemathesis.io integration is enabled, wait for the handler & print the resulting status."""
     if context.service:
         click.echo()
-        title = click.style("Schemathesis.io", bold=True)
+        title = click.style("Upload", bold=True)
         event = wait_for_service_handler(context.service.queue, title)
         color = {
             service.Completed: "green",
+            service.SuccessfulUpload: "green",
             service.Error: "red",
             service.Timeout: "red",
         }[event.__class__]
-        status = click.style(event.name, fg=color, bold=True)
+        status = click.style(event.status, fg=color, bold=True)
         click.echo(f"{title}: {status}\r", nl=False)
         click.echo()
         if isinstance(event, service.Completed):
-            report_title = click.style("Report", bold=True)
-            click.echo(f"{report_title}: {event.short_url}")
+            title = click.style("Report", bold=True)
+            click.echo(f"{title}: {event.short_url}")
         if isinstance(event, service.Error):
             click.echo()
             display_service_error(event)
+        if isinstance(event, service.SuccessfulUpload):
+            click.echo()
+            click.echo(event.message)
+            click.echo()
+            click.echo(event.next_url)
 
 
 def display_service_error(event: service.Error) -> None:
@@ -366,7 +372,7 @@ def wait_for_service_handler(queue: Queue, title: str) -> service.Event:
     """Wait for the Schemathesis.io handler to finish its job."""
     start = time.monotonic()
     spinner = create_spinner(SPINNER_REPETITION_NUMBER)
-    # The testing process it done and we need to wait for the Schemathesis.io handler to finish
+    # The testing process is done, and we need to wait for the Schemathesis.io handler to finish
     # It might still have some data to send
     while queue.empty():
         if time.monotonic() - start >= service.WORKER_FINISH_TIMEOUT:

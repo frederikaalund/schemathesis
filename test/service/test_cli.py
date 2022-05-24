@@ -52,7 +52,7 @@ def test_no_failures(cli, schema_url, service, service_token):
     lines = get_stdout_lines(result.stdout)
     # This output contains all temporary lines with a spinner - regular terminals handle `\r` and display everything
     # properly. For this test case, just check one line
-    assert "Schemathesis.io: COMPLETED" in lines
+    assert "Upload: COMPLETED" in lines
     assert "Report: http://127.0.0.1" in lines
 
 
@@ -75,7 +75,7 @@ def test_server_error(cli, schema_url, service, service_token, run_id):
     service.assert_call(2, f"/runs/{run_id}/finish/", 204)
     # And it should be noted in the output
     lines = get_stdout_lines(result.stdout)
-    assert "Schemathesis.io: ERROR" in lines
+    assert "Upload: ERROR" in lines
     assert "Please, try again in 30 minutes" in lines
 
 
@@ -147,7 +147,7 @@ def test_server_timeout(cli, schema_url, service, service_token, mocker):
     assert result.exit_code == ExitCode.OK, result.stdout
     # Then the output indicates timeout
     lines = get_stdout_lines(result.stdout)
-    assert lines[18].endswith("Schemathesis.io: TIMEOUT")
+    assert lines[18].endswith("Upload: TIMEOUT")
 
 
 @pytest.mark.service(

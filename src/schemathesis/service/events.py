@@ -1,3 +1,5 @@
+from typing import Optional
+
 import attr
 
 from ..utils import format_exception
@@ -10,7 +12,7 @@ class Event:
     """
 
     @property
-    def name(self) -> str:
+    def status(self) -> str:
         return self.__class__.__name__.upper()
 
 
@@ -19,6 +21,18 @@ class Completed(Event):
     """The handler finished successfully."""
 
     short_url: str = attr.ib()
+
+
+@attr.s(slots=True)
+class SuccessfulUpload(Event):
+    """Report uploaded successfully."""
+
+    message: Optional[str] = attr.ib()
+    next_url: str = attr.ib()
+
+    @property
+    def status(self) -> str:
+        return "COMPLETED"
 
 
 @attr.s(slots=True)

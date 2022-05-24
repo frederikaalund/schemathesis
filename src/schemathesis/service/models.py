@@ -23,4 +23,5 @@ class AuthResponse:
 
 @attr.s(slots=True)
 class UploadResponse:
-    pass
+    message: str = attr.ib()
+    next_url: str = attr.ib()
