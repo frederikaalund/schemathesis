@@ -3,7 +3,7 @@ default_language_version:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
@@ -20,17 +20,17 @@ repos:
       - id: gitlint
 
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
+    rev: v1.38.0
     hooks:
       - id: yamllint
 
   - repo: https://github.com/codingjoe/relint
-    rev: 3.1.1
+    rev: 3.5.0
     hooks:
       - id: relint
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
+    rev: v2.3.1
     hooks:
       - id: mypy
         exclude: ^(docs/|test/|test-corpus/|example/|benches/).*$
@@ -38,17 +38,17 @@ repos:
         additional_dependencies: [types-click, types-requests, types-PyYAML]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.9
+    rev: v0.16.7
     hooks:
       - id: ruff-format
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.9
+    rev: v0.16.7
     hooks:
       - id: ruff
 
   - repo: https://github.com/myint/rstcheck
-    rev: v6.2.0
+    rev: v6.3.0
     hooks:
       - id: rstcheck
         additional_dependencies:
